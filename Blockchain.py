@@ -8,7 +8,7 @@ from hashlib import sha256
 import json
 import time
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import requests
 
 
@@ -130,8 +130,18 @@ blockchain = Blockchain()
 def hello():
     text = '''
 	<h1>Welcome to Python Blockchain Demo!</h1>
-	Click <a href="/chain">Chain</a> to view the blockchain.<br>    	
-	Click <a href="/mine">Mine</a> to add transaction and mine the blockchain.
+	Click <a href="/chain">Chain</a> to view the blockchain.<br><br><br>  
+    <label for="name">Transactions:</label>
+	<form method="POST" action="/mine">
+    <label for="name">Transaction 1:</label>
+    <input type="text" id="transaction1" name="transaction1" size="20"><br>   	
+    <label for="name">Transaction 2:</label>
+    <input type="text" id="transaction2" name="transaction2" size="20"><br>      	
+    <label for="name">Transaction 3:</label>
+    <input type="text" id="transaction3" name="transaction3" size="20"><br> 
+    <input type="submit" value="Add Transactions and Mine the Blockchain">	
+    </form>	
+	
 	'''
     return text
 	
@@ -142,14 +152,16 @@ def get_chain():
         chain_data.append(block.__dict__)
     return json.dumps({"length": len(chain_data),
                        "chain": chain_data})
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['GET', 'POST'])
 def mine():
     # Add some transactions and mine the block ====================
-	transaction = "Hello World"
+	transaction = request.form.get('transaction1')
+	print(type(transaction))
+	print(transaction)
 	blockchain.add_new_transaction(transaction)
-	transaction = "Hello World 2"
+	transaction = request.form.get('transaction2')
 	blockchain.add_new_transaction(transaction)
-	transaction = "Hello World 3"
+	transaction = request.form.get('transaction3')
 	blockchain.add_new_transaction(transaction)
 	blockchain.mine()
 	return get_chain()
