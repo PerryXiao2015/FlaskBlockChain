@@ -113,6 +113,7 @@ class Blockchain:
                           previous_hash=last_block.hash)
 
         proof = self.proof_of_work(new_block)
+        print("New Block Hash: ",new_block.compute_hash())
         self.add_block(new_block, proof)
 
         self.unconfirmed_transactions = []
@@ -127,12 +128,20 @@ blockchain = Blockchain()
 # In[41]:
 
 @app.route('/')
-def hello():
+def index():
     text = '''
-	<h1>Welcome to Python Blockchain Demo!</h1>
-	Click <a href="/chain">Chain</a> to view the blockchain.<br><br>
-	Click <a href="/trans">Transactions</a> to add transactions and mine the blockchain.<br><br> 	
-	Click <a href="/result">Chain</a> to view the blockchain in a table format.<br><br>
+	<html>
+      <head>
+          <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">      
+	  </head>
+	  <body>
+	    <h1>Welcome to Python Blockchain Demo!</h1>
+	       Click <a href="/chain">Chain</a> to view the blockchain.<br><br>
+	       Click <a href="/trans">Transactions</a> to add transactions and mine the blockchain.<br><br> 	
+	       Click <a href="/result">Chain</a> to view the blockchain in a table format.<br><br>
+	       Click <a href="/validate">Validate</a> to validate the blockchain.<br><br>
+	  </body>
+	</html>
 	'''
     return text
 	
@@ -159,12 +168,12 @@ def get_chain():
     chain_data = []
     for block in blockchain.chain:
         chain_data.append(block.__dict__)
-    print("block data [0]....")
-    print(type(chain_data[0]))
-    print(chain_data[0])
-    for key,value in chain_data[0].items():
-        print(key)
-        print(value)
+#    print("block data [0]....")
+#    print(type(chain_data[0]))
+#    print(chain_data[0])
+#    for key,value in chain_data[0].items():
+#        print(key)
+#        print(value)
 
 	
     return json.dumps({"length": len(chain_data),
@@ -178,8 +187,8 @@ def trans():
 def mine():
     # Add some transactions and mine the block ====================
 	transaction = request.form.get('transaction1')
-	print(type(transaction))
-	print(transaction)
+#	print(type(transaction))
+#	print(transaction)
 	blockchain.add_new_transaction(transaction)
 	transaction = request.form.get('transaction2')
 	blockchain.add_new_transaction(transaction)
@@ -193,9 +202,34 @@ def result():
     chain_data = []
     for block in blockchain.chain:
         chain_data.append(block.__dict__)
-    dict = {'phy':50,'che':60,'maths':70}
+#    dict = {'phy':50,'che':60,'maths':70}
     dict = chain_data
     return render_template('result.html', results = dict)
+
+@app.route('/validate')
+def validate():
+    val = True
+    previous_hash = "0"
+    count = 0
+    for block in blockchain.chain:
+        print("Count: ", count)
+        print(block.hash)
+        print(block.compute_hash())
+        print(block.previous_hash)
+        print(previous_hash)
+        if count > 0:
+            if not blockchain.is_valid_proof(block, block.hash):
+                val = False
+                print("1................")  
+        if previous_hash != block.previous_hash:
+            val = False
+            print("2................")
+        previous_hash = block.hash
+        count = count + 1
+    if val:	  
+        return "Blockchain is valid!"
+    else:
+        return "Blockchain is NOT valid!"
 
 # In[45]:
 
