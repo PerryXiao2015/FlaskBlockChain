@@ -8,7 +8,7 @@ from hashlib import sha256
 import json
 import time
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, render_template, jsonify
 import requests
 
 
@@ -130,28 +130,50 @@ blockchain = Blockchain()
 def hello():
     text = '''
 	<h1>Welcome to Python Blockchain Demo!</h1>
-	Click <a href="/chain">Chain</a> to view the blockchain.<br><br><br>  
-    <label for="name">Transactions:</label>
-	<form method="POST" action="/mine">
-    <label for="name">Transaction 1:</label>
-    <input type="text" id="transaction1" name="transaction1" size="20"><br>   	
-    <label for="name">Transaction 2:</label>
-    <input type="text" id="transaction2" name="transaction2" size="20"><br>      	
-    <label for="name">Transaction 3:</label>
-    <input type="text" id="transaction3" name="transaction3" size="20"><br> 
-    <input type="submit" value="Add Transactions and Mine the Blockchain">	
-    </form>	
-	
+	Click <a href="/chain">Chain</a> to view the blockchain.<br><br>
+	Click <a href="/trans">Transactions</a> to add transactions and mine the blockchain.<br><br> 	
+	Click <a href="/result">Chain</a> to view the blockchain in a table format.<br><br>
 	'''
     return text
 	
+#def hello():
+#    text = '''
+#	 <h1>Welcome to Python Blockchain Demo!</h1>
+#	 Click <a href="/chain">Chain</a> to view the blockchain.<br><br>  
+#    <label for="name">Transactions:</label>
+#	 <form method="POST" action="/mine">
+#    <label for="name">Transaction 1:</label>
+#    <input type="text" id="transaction1" name="transaction1" size="20"><br>   	
+#    <label for="name">Transaction 2:</label>
+#    <input type="text" id="transaction2" name="transaction2" size="20"><br>      	
+#    <label for="name">Transaction 3:</label>
+#    <input type="text" id="transaction3" name="transaction3" size="20"><br> 
+#    <input type="submit" value="Add Transactions and Mine the Blockchain">	
+#    </form>	
+#	
+#	'''
+#    return text	
+
 @app.route('/chain', methods=['GET'])
 def get_chain():
     chain_data = []
     for block in blockchain.chain:
         chain_data.append(block.__dict__)
+    print("block data [0]....")
+    print(type(chain_data[0]))
+    print(chain_data[0])
+    for key,value in chain_data[0].items():
+        print(key)
+        print(value)
+
+	
     return json.dumps({"length": len(chain_data),
                        "chain": chain_data})
+
+@app.route('/trans', methods=['GET'])
+def trans():
+    return render_template('transactions.html')
+	
 @app.route('/mine', methods=['GET', 'POST'])
 def mine():
     # Add some transactions and mine the block ====================
@@ -166,6 +188,14 @@ def mine():
 	blockchain.mine()
 	return get_chain()
 
+@app.route('/result')
+def result():
+    chain_data = []
+    for block in blockchain.chain:
+        chain_data.append(block.__dict__)
+    dict = {'phy':50,'che':60,'maths':70}
+    dict = chain_data
+    return render_template('result.html', results = dict)
 
 # In[45]:
 
