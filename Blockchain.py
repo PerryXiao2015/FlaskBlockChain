@@ -51,6 +51,7 @@ class Blockchain:
         """
         genesis_block = Block(0, [], time.time(), "0")
         genesis_block.hash = genesis_block.compute_hash()
+		#genesis_block.hash = self.proof_of_work(genesis_block)
         self.chain.append(genesis_block)
 
     @property
@@ -108,6 +109,8 @@ class Blockchain:
         transactions to the blockchain by adding them to the block
         and figuring out Proof Of Work.
         """
+        t = time.time()
+        t_ms = int(t * 1000)
         if not self.unconfirmed_transactions:
             return False
 
@@ -119,10 +122,12 @@ class Blockchain:
                           previous_hash=last_block.hash)
 
         proof = self.proof_of_work(new_block)
-        print("New Block Hash: ",new_block.compute_hash())
         self.add_block(new_block, proof)
 
         self.unconfirmed_transactions = []
+        t = time.time()
+        dt = int(t * 1000) - t_ms
+        print("Time used to mine the block [ms]: ",dt)
         return new_block.index
 		
     # Get the Blockchain information
