@@ -7,6 +7,7 @@
 from hashlib import sha256
 import json
 import time
+import copy
 
 from flask import Flask, request, render_template, jsonify
 import requests
@@ -27,6 +28,11 @@ class Block:
         block_string = json.dumps(self.__dict__, sort_keys=True)
         return sha256(block_string.encode()).hexdigest()
 
+    def info(self):
+        """
+        A function that return the  block contents.
+        """
+        return json.dumps(self.__dict__, sort_keys=True)
 
 class Blockchain:
     # difficulty of our PoW algorithm
@@ -118,8 +124,45 @@ class Blockchain:
 
         self.unconfirmed_transactions = []
         return new_block.index
+		
+    # Get the Blockchain information
+    def get_chain(self):
+        chain_data = []
+        for block in self.chain:
+            chain_data.append(block.__dict__)
+        return chain_data
 
+	# Validate the Blockchain 
+    def validate_chain(self):
+        valid = True
+        previous_hash = "0"
+        for block in self.chain:
+            #print("Block index ", block.index)
+            #print("Block nonce ", block.nonce)
+            #print("Block previous_hash: ", block.previous_hash)
+            #print("Block hash: ", block.hash)
+            #print("Block info(): ", block.info())
+            current_hash = block.hash
 
+            # Make a copy of block and remove the hash from the block
+            block2 = copy.deepcopy(block)
+            if 'hash' in block2.__dict__:
+                del block2.__dict__['hash']
+            #print("Block2 compute_hash(): ", block2.compute_hash())
+            #print("Block2 info(): ", block2.info())
+            if previous_hash !=block.previous_hash:
+                valid = False
+                print("Error 1 ...............")
+            if block.index > 0:
+              if current_hash.startswith('0' * Blockchain.difficulty)!= True:
+                  valid = False
+                  print("Error 2 ...............")
+            if current_hash != block2.compute_hash():
+                valid = False
+                print("Error 3 ...............")
+            previous_hash = current_hash
+        return valid
+		
 app = Flask(__name__)
 blockchain = Blockchain()
 
@@ -209,23 +252,7 @@ def result():
 @app.route('/validate')
 def validate():
     val = True
-    previous_hash = "0"
-    count = 0
-    for block in blockchain.chain:
-        print("Count: ", count)
-        print(block.hash)
-        print(block.compute_hash())
-        print(block.previous_hash)
-        print(previous_hash)
-        if count > 0:
-            if not blockchain.is_valid_proof(block, block.hash):
-                val = False
-                print("1................")  
-        if previous_hash != block.previous_hash:
-            val = False
-            print("2................")
-        previous_hash = block.hash
-        count = count + 1
+    val = blockchain.validate_chain()
     if val:	  
         return "Blockchain is valid!"
     else:
