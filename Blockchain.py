@@ -33,6 +33,11 @@ class Block:
         A function that return the  block contents.
         """
         return json.dumps(self.__dict__, sort_keys=True)
+		
+    def __repr__(self):
+        return "{} - {} - {} - {} - {} - {}".format(self.index, self.previous_hash, self.transactions, self.timestamp, self.nonce, self.hash )
+    def __str__(self):
+        return "{} - {} - {} - {} - {} - {}".format(self.index, self.previous_hash, self.transactions, self.timestamp, self.nonce, self.hash )
 
 class Blockchain:
     # difficulty of our PoW algorithm
@@ -170,7 +175,8 @@ class Blockchain:
 		
 app = Flask(__name__)
 blockchain = Blockchain()
-
+print(blockchain)
+print(repr(blockchain))
 
 
 # In[41]:
